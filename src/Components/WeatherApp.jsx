@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from "react-redux";
+import { fetchWeatherAction } from "../redux/slices/weatherSlices";
 import './WeatherApp.css'
 
 // day
@@ -34,6 +36,8 @@ const WeatherApp = (props) => {
     const [weather, setWeather] = useState("");
     const [dayNight, setDayNight] = useState("");
     const [currentLocation, setCurrentLocation] = useState({});
+
+    const dispatch = useDispatch();
 
     
 
@@ -118,30 +122,7 @@ const WeatherApp = (props) => {
         doLogin();
     }, []);
 
-    useEffect(() => {
-
-        
-        let searchQuery =
-          currentLocation && currentLocation.coords
-            ? `lat=${currentLocation.coords.latitude}&lon=${currentLocation.coords.longitude}`
-            : `city=${city},${country}`;
-    
-        fetch(`http://localhost:8080/api/getcityclimate?${searchQuery}`,{
-            method: 'get',
-            headers: new Headers({
-              'Authorization': 'Bearer ' + JSON.parse(localStorage.getItem('token')).token,
-              'Content-Type': 'application/json',
-            })
-          })
-        .then((res)=>res.json())
-        .then((result)=>{
-            setWeatherData(result) 
-        })
-        .catch((err)=>{
-            console.log('err', err);
-            
-        })}, []);    
-        
+  
 
 
      
@@ -232,14 +213,18 @@ return (
                 <h1 id="heading">Weather App</h1>
                 <form onSubmit={(e) => searchCity(e)}>
                 <input type="text" autoFocus value={city} placeholder='Enter city name' onChange={(e)=>setCity(e.target.value)} />
-                <Button variant="primary">Primary</Button>{' '}
+                <Button variant="primary" >Primary</Button>{' '}
+                <Button variant="secondary"   onClick={() => dispatch(fetchWeatherAction({city:city,country:country}))}>Try Call Redux</Button>{' '}
+
+              
                
                 </form>
                 
-            
+               
                 <div className="detail">
                     
                     <h2>{weatherData && weatherData.name}, {weatherData && weatherData.sys && weatherData.sys.country}</h2>
+                    <small> {new Date(weatherData && weatherData.dt * 1000).toLocaleString("en-US", {day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "numeric"})}</small> 
                     <div className="row1">
                         <div className="row1-col1">
                             <img src={`http://openweathermap.org/img/wn/${weatherData && weatherData.weather && weatherData.weather[0] && weatherData.weather[0].icon}@2x.png`} />
@@ -260,7 +245,7 @@ return (
                     
                     
                     
-                    <small>Last updated:  {new Date(weatherData && weatherData.dt * 1000).toLocaleString("en-US", {day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "numeric", timeZoneName: "short"})}</small> 
+                   
                 </div>
             </Container>
         </div>
